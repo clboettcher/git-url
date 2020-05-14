@@ -5,7 +5,7 @@ use std::process::{Command, exit, Output};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let path: Option<String> = if args.len() == 2 { Some(String::from(&args[1])) } else { None };
+    let pathOption: Option<String> = if args.len() == 2 { Some(String::from(&args[1])) } else { None };
     let remote = if args.len() == 3 { String::from(&args[2]) } else { String::from("origin") };
 
     let output = get_git_url(&remote).expect("failed to get git url");
@@ -18,10 +18,10 @@ fn main() {
     let remote_url_raw = get_trimmed_stdout(output);
     let remote_url = &remote_url_raw[..remote_url_raw.len() - 4]; // remove ".git"
 
-    match path {
-        Some(s) => {
+    match pathOption {
+        Some(path) => {
             let branch = get_branch().expect("could not get branch");
-            let relative_path = get_relative_path(s.as_str())
+            let relative_path = get_relative_path(path.as_str())
                 .expect("could not get relative path");
 
             // {remote_url}/blob/{branch}/{relative_path}
