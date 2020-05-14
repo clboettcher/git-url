@@ -31,7 +31,6 @@ fn main() {
             .takes_value(true))
         .get_matches();
 
-    // Gets a value for config if supplied by user, or defaults to "default.conf"
     let path_option = matches.value_of("file");
     let remote = matches.value_of("remote").unwrap();
     run(path_option, remote);
@@ -51,11 +50,16 @@ fn run(path_option: Option<&str>, remote: &str) {
     match path_option {
         Some(path) => {
             let branch = get_branch().expect("could not get branch");
-            let repo_path = resolve_repo_path(path)
+            let resolve_out = resolve_repo_paths(path)
                 .expect("could not get path");
 
-            if repo_path.is_empty() {
-                eprint!("File '{}' not known to git. Please note that dirs are not supported. \
+            let stdout = get_trimmed_stdout(resolve_out);
+            let repo_paths_vec = stdout
+                .lines()
+                .collect::<Vec<&str>>();
+
+            if repo_paths_vec.len() != 1 {
+                eprint!("File '{}' not unique to git. Please note that dirs are not supported. \
                 See --help for details.", path);
                 exit(2)
             }
@@ -64,7 +68,7 @@ fn run(path_option: Option<&str>, remote: &str) {
             println!("{remote_url}/blob/{branch}/{repo_path}",
                      remote_url = remote_url,
                      branch = branch,
-                     repo_path = repo_path
+                     repo_path = repo_paths_vec[0]
             );
         }
         None => println!("{}", remote_url)
@@ -82,8 +86,8 @@ fn get_branch() -> io::Result<String> {
 }
 
 // git ls-files --full-name {path}
-fn resolve_repo_path(path: &str) -> io::Result<String> {
-    run_cmd_get_stdout(vec!["ls-files", "--full-name", path])
+fn resolve_repo_paths(path: &str) -> io::Result<Output> {
+    run_git(vec!["ls-files", "--full-name", path])
 }
 
 fn run_cmd_get_stdout(args: Vec<&str>) -> io::Result<String> {
