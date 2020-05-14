@@ -1,13 +1,14 @@
-// gh='xdg-open ${$(git remote get-url origin)//.git/}'
-
 use std::{env, io};
 use std::process::{Command, exit, Output};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let pathOption: Option<String> = if args.len() == 2 { Some(String::from(&args[1])) } else { None };
+    let path_option: Option<String> = if args.len() == 2 { Some(String::from(&args[1])) } else { None };
     let remote = if args.len() == 3 { String::from(&args[2]) } else { String::from("origin") };
+    run(path_option, remote);
+}
 
+fn run(path_option : Option<String>, remote : String) {
     let output = get_git_url(&remote).expect("failed to get git url");
 
     if !output.status.success() {
@@ -18,7 +19,7 @@ fn main() {
     let remote_url_raw = get_trimmed_stdout(output);
     let remote_url = &remote_url_raw[..remote_url_raw.len() - 4]; // remove ".git"
 
-    match pathOption {
+    match path_option {
         Some(path) => {
             let branch = get_branch().expect("could not get branch");
             let relative_path = get_relative_path(path.as_str())
