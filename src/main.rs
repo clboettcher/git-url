@@ -16,7 +16,6 @@ fn main() {
         )
         .arg(Arg::with_name("path")
             .required(false)
-            .default_value("repository root")
             .index(1)
             .value_name("PATH")
             .help("The path to the file to get the URL for")
