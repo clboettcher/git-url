@@ -1,14 +1,42 @@
-use std::{env, io};
+extern crate clap;
+
+use std::io;
 use std::process::{Command, exit, Output};
 
+use clap::{App, Arg};
+
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    let path_option: Option<String> = if args.len() == 2 { Some(String::from(&args[1])) } else { None };
-    let remote = if args.len() == 3 { String::from(&args[2]) } else { String::from("origin") };
+    let matches = App::new("Git URL")
+        .version("0.1.0")
+        .author("Claudius Boettcher <claudius.boettcher@qaware.de>")
+        .about("Prints the remote URL of a file in a git repository.\n\
+            Examples: \n\
+            \tgit-url         prints https://github.com/myuser/myrepo\n\
+            \tgit-url file.rs prints https://github.com/myuser/myrepo/blob/master/file.rs"
+        )
+        .arg(Arg::with_name("path")
+            .required(false)
+            .default_value("repository root")
+            .index(1)
+            .value_name("PATH")
+            .help("The path to the file to get the URL for")
+            .takes_value(true))
+        .arg(Arg::with_name("remote")
+            .required(false)
+            .index(2)
+            .default_value("origin")
+            .value_name("REMOTE")
+            .help("The name of the git remote to use")
+            .takes_value(true))
+        .get_matches();
+
+    // Gets a value for config if supplied by user, or defaults to "default.conf"
+    let path_option = matches.value_of("path");
+    let remote = matches.value_of("remote").unwrap();
     run(path_option, remote);
 }
 
-fn run(path_option : Option<String>, remote : String) {
+fn run(path_option: Option<&str>, remote: &str) {
     let output = get_git_url(&remote).expect("failed to get git url");
 
     if !output.status.success() {
@@ -22,7 +50,7 @@ fn run(path_option : Option<String>, remote : String) {
     match path_option {
         Some(path) => {
             let branch = get_branch().expect("could not get branch");
-            let relative_path = get_relative_path(path.as_str())
+            let relative_path = get_relative_path(path)
                 .expect("could not get relative path");
 
             // {remote_url}/blob/{branch}/{relative_path}
