@@ -8,17 +8,14 @@ fn main() {
     let path: Option<String> = if args.len() == 2 { Some(String::from(&args[1])) } else { None };
     let remote = if args.len() == 3 { String::from(&args[2]) } else { String::from("origin") };
 
-    let out = get_git_url(&remote);
+    let output = get_git_url(&remote).expect("failed to get git url");
 
-    // println!("status: {}", out.status);
-    // println!("stdout: {}", String::from_utf8_lossy(&out.stdout));
-    // println!("stderr: {}", String::from_utf8_lossy(&out.stderr));
-    if !out.status.success() {
-        eprint!("{} {}", "Could not get url:", String::from_utf8_lossy(&out.stderr));
-        exit(out.status.code().unwrap_or(1));
+    if !output.status.success() {
+        eprint!("{} {}", "Could not get url:", String::from_utf8_lossy(&output.stderr));
+        exit(output.status.code().unwrap_or(1));
     }
 
-    let remote_url_raw = String::from_utf8_lossy(&out.stdout).trim_end().to_owned();
+    let remote_url_raw = get_trimmed_stdout(output);
     let remote_url = &remote_url_raw[..remote_url_raw.len() - 4]; // remove ".git"
 
     if path.is_some() {
@@ -26,7 +23,7 @@ fn main() {
         let relative_path = get_relative_path(path.unwrap().as_str())
             .expect("could not get relative path");
 
-        // echo $remote_url/blob/$branch/$relative_file_path
+        // {remote_url}/blob/{branch}/{relative_path}
         println!("{remote_url}/blob/{branch}/{relative_path}",
                  remote_url = remote_url,
                  branch = branch,
@@ -37,24 +34,34 @@ fn main() {
     }
 }
 
-fn get_git_url(remote: &str) -> Output {
-    return Command::new("git")
-        .args(&["remote", "get-url", remote])
-        .output()
-        .expect("git command failed");
+// git remote get-url {remote}
+fn get_git_url(remote: &str) -> io::Result<Output> {
+    run_git(vec!["remote", "get-url", remote])
 }
 
-// branch=$(git rev-parse --abbrev-ref HEAD)
+// git rev-parse --abbrev-ref HEAD
 fn get_branch() -> io::Result<String> {
-    run_git(vec!["rev-parse", "--abbrev-ref", "HEAD"])
+    run_cmd_get_stdout(vec!["rev-parse", "--abbrev-ref", "HEAD"])
 }
 
-// relative_file_path=$(git ls-files --full-name $1)
+// git ls-files --full-name {path}
 fn get_relative_path(path: &str) -> io::Result<String> {
-    run_git(vec!["ls-files", "--full-name", path])
+    run_cmd_get_stdout(vec!["ls-files", "--full-name", path])
 }
 
-fn run_git(args: Vec<&str>) -> io::Result<String> {
-    let output = Command::new("git").args(&args).output()?;
-    Ok(String::from_utf8_lossy(&output.stdout).trim_end().to_owned())
+fn run_cmd_get_stdout(args: Vec<&str>) -> io::Result<String> {
+    let output = run_git(args)?;
+    Ok(get_trimmed_stdout(output))
+}
+
+fn run_git(args: Vec<&str>) -> io::Result<Output> {
+    let output = Command::new("git")
+        .args(&args)
+        .output()?;
+
+    Ok(output)
+}
+
+fn get_trimmed_stdout(output: Output) -> String {
+    String::from_utf8_lossy(&output.stdout).trim_end().to_owned()
 }
