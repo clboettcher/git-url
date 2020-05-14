@@ -14,11 +14,13 @@ fn main() {
             \tgit-url         prints https://github.com/myuser/myrepo\n\
             \tgit-url file.rs prints https://github.com/myuser/myrepo/blob/master/file.rs"
         )
-        .arg(Arg::with_name("path")
+        .arg(Arg::with_name("file")
             .required(false)
             .index(1)
-            .value_name("PATH")
-            .help("The path to the file to get the URL for")
+            .value_name("FILE")
+            .help("The path of the file to get the URL for. Relative to the current \
+            working directory. Must be a file - directories are not supported. \
+            Optional, if FILE is omitted, the base URL of the repo is printed.")
             .takes_value(true))
         .arg(Arg::with_name("remote")
             .required(false)
@@ -30,7 +32,7 @@ fn main() {
         .get_matches();
 
     // Gets a value for config if supplied by user, or defaults to "default.conf"
-    let path_option = matches.value_of("path");
+    let path_option = matches.value_of("file");
     let remote = matches.value_of("remote").unwrap();
     run(path_option, remote);
 }
@@ -49,14 +51,20 @@ fn run(path_option: Option<&str>, remote: &str) {
     match path_option {
         Some(path) => {
             let branch = get_branch().expect("could not get branch");
-            let relative_path = get_relative_path(path)
-                .expect("could not get relative path");
+            let repo_path = resolve_repo_path(path)
+                .expect("could not get path");
+
+            if repo_path.is_empty() {
+                eprint!("File '{}' not known to git. Please note that dirs are not supported. \
+                See --help for details.", path);
+                exit(2)
+            }
 
             // {remote_url}/blob/{branch}/{relative_path}
-            println!("{remote_url}/blob/{branch}/{relative_path}",
+            println!("{remote_url}/blob/{branch}/{repo_path}",
                      remote_url = remote_url,
                      branch = branch,
-                     relative_path = relative_path
+                     repo_path = repo_path
             );
         }
         None => println!("{}", remote_url)
@@ -74,7 +82,7 @@ fn get_branch() -> io::Result<String> {
 }
 
 // git ls-files --full-name {path}
-fn get_relative_path(path: &str) -> io::Result<String> {
+fn resolve_repo_path(path: &str) -> io::Result<String> {
     run_cmd_get_stdout(vec!["ls-files", "--full-name", path])
 }
 
