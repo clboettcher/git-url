@@ -18,19 +18,20 @@ fn main() {
     let remote_url_raw = get_trimmed_stdout(output);
     let remote_url = &remote_url_raw[..remote_url_raw.len() - 4]; // remove ".git"
 
-    if path.is_some() {
-        let branch = get_branch().expect("could not get branch");
-        let relative_path = get_relative_path(path.unwrap().as_str())
-            .expect("could not get relative path");
+    match path {
+        Some(s) => {
+            let branch = get_branch().expect("could not get branch");
+            let relative_path = get_relative_path(s.as_str())
+                .expect("could not get relative path");
 
-        // {remote_url}/blob/{branch}/{relative_path}
-        println!("{remote_url}/blob/{branch}/{relative_path}",
-                 remote_url = remote_url,
-                 branch = branch,
-                 relative_path = relative_path
-        );
-    } else {
-        println!("{}", remote_url);
+            // {remote_url}/blob/{branch}/{relative_path}
+            println!("{remote_url}/blob/{branch}/{relative_path}",
+                     remote_url = remote_url,
+                     branch = branch,
+                     relative_path = relative_path
+            );
+        }
+        None => println!("{}", remote_url)
     }
 }
 
