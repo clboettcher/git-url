@@ -50,8 +50,7 @@ fn get_relative_path(path: &str) -> io::Result<String> {
 }
 
 fn run_cmd_get_stdout(args: Vec<&str>) -> io::Result<String> {
-    let output = run_git(args)?;
-    Ok(get_trimmed_stdout(output))
+    run_git(args).map(get_trimmed_stdout)
 }
 
 fn run_git(args: Vec<&str>) -> io::Result<Output> {
