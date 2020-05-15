@@ -1,5 +1,7 @@
 # Git URL
 
+[![Build Status](https://travis-ci.org/clboettcher/git-url.svg?branch=master)](https://travis-ci.org/clboettcher/git-url) [![License](http://img.shields.io/badge/license-MIT-green.svg?style=flat)]()
+
 CLI tool that prints the remote URL of a file in a git repository.
 
 Written in rust.
