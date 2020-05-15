@@ -6,6 +6,32 @@ Written in rust.
 
 # Usage
 
+Get repo url
+
+```shell
+~/Projekte/rust
+❯ git-url                    
+https://github.com/rust-lang/rust
+```
+
+Get URL of file in repo
+
+```shell
+~/Projekte/rust
+❯ git-url src/etc/ctags.rust 
+https://github.com/rust-lang/rust/blob/master/src/etc/ctags.rust
+```
+
+Get URL of file in repo from different remote (default is origin)
+
+```shell
+~/Projekte/rust
+❯ git-url src/etc/ctags.rust ckw        
+https://github.com/ckw/rust/blob/master/src/etc/ctags.rust
+```
+
+`--help` output:
+
 ```shell
 Examples: 
 	git-url         prints https://github.com/myuser/myrepo
