@@ -50,6 +50,14 @@ ARGS:
     <REMOTE>    The name of the git remote to use [default: origin]
 ```
 
+
+# Install
+
+```shell
+git clone https://github.com/clboettcher/git-url
+cargo install --path git-url
+```
+
 # Maintainer
 
 Claudius Boettcher, <claudius.boettcher@qaware.de>.
