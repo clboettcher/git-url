@@ -1,7 +1,6 @@
 extern crate clap;
 
 use std::io;
-
 use std::process;
 
 fn main() {
@@ -44,7 +43,12 @@ fn run(path_option: Option<&str>, remote: &str) {
     }
 
     let remote_url_raw = get_trimmed_stdout(output);
-    let remote_url = &remote_url_raw[..remote_url_raw.len() - 4]; // remove ".git"
+    let remote_url = if remote_url_raw.ends_with(".git") {
+        // remove ".git"
+        &remote_url_raw[..remote_url_raw.len() - 4]
+    } else {
+        remote_url_raw.as_str()
+    };
 
     match path_option {
         Some(path) => {
