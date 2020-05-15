@@ -60,10 +60,6 @@ git clone https://github.com/clboettcher/git-url
 cargo install --path git-url
 ```
 
-# Maintainer
-
-Claudius Boettcher, <claudius.boettcher@qaware.de>.
-
 # License
 
 This software is provided under the MIT open source license, read the `LICENSE` file for details.
