@@ -2,7 +2,6 @@ extern crate clap;
 
 use std::io;
 
-use clap;
 use std::process;
 
 fn main() {
@@ -95,11 +94,9 @@ fn run_cmd_get_stdout(args: Vec<&str>) -> io::Result<String> {
 }
 
 fn run_git(args: Vec<&str>) -> io::Result<process::Output> {
-    let output = process::Command::new("git")
+    process::Command::new("git")
         .args(&args)
-        .output()?;
-
-    Ok(output)
+        .output()
 }
 
 fn get_trimmed_stdout(output: process::Output) -> String {
